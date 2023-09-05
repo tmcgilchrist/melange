@@ -27,7 +27,7 @@ jobs:
         with:
           ocaml-compiler: ${{ matrix.ocaml-compiler }}
           opam-repositories: |
-            dra27: https://github.com/tmcgilchrist/opam-repository.git#windows-5.0
+            dra27: https://github.com/shym/opam-repository.git#win51a2
             default: https://github.com/ocaml-opam/opam-repository-mingw.git#sunset
             standard: https://github.com/ocaml/opam-repository.git
 
