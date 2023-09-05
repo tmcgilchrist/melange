@@ -46,6 +46,11 @@ jobs:
         run: |
           env HOMEBREW_NO_AUTO_UPDATE=1 brew install tree
 
+      - name: Use OCaml ${{ matrix.ocaml-compiler }}
+        uses: ocaml/setup-ocaml@v2
+        with:
+          ocaml-compiler: ${{ matrix.ocaml-compiler }}
+
       - name: Install dependencies (Windows)
         if: ${{ matrix.os == 'windows-latest' }}
         working-directory: melange
@@ -56,11 +61,6 @@ jobs:
            opam pin add reactjs-jsx-ppx.dev . --with-test -y
            opam pin add melange.dev . --with-test -y
            opam pin add rescript-syntax.dev . --with-test -y
-
-      - name: Use OCaml ${{ matrix.ocaml-compiler }}
-        uses: ocaml/setup-ocaml@v2
-        with:
-          ocaml-compiler: ${{ matrix.ocaml-compiler }}
 
       - name: Install dependencies
         working-directory: melange
