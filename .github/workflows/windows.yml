@@ -1,0 +1,40 @@
+name: windows
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - windows-latest
+        ocaml-compiler:
+          - "ocaml.5.0.0,ocaml-option-mingw"
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set-up OCaml
+        uses: ocaml/setup-ocaml@v2
+        with:
+          ocaml-compiler: ${{ matrix.ocaml-compiler }}
+          opam-repositories: |
+            dra27: https://github.com/dra27/opam-repository.git#windows-5.0
+            default: https://github.com/ocaml-opam/opam-repository-mingw.git#sunset
+            standard: https://github.com/ocaml/opam-repository.git
+
+      - name: Install dependencies
+        run: opam install ./melange.opam
+
+      - name: Build
+        run: |
+          opam exec -- dune build
+
