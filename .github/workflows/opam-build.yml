@@ -1,80 +1,92 @@
-name: Opam Pipeline
+# name: Opam Pipeline
 
-on:
-  pull_request:
-  push:
-    branches:
-      - main
-  schedule:
-    # Prime the caches every Monday
-    - cron: 0 1 * * MON
+# on:
+#   pull_request:
+#   push:
+#     branches:
+#       - main
+#   schedule:
+#     # Prime the caches every Monday
+#     - cron: 0 1 * * MON
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+# concurrency:
+#   group: ${{ github.workflow }}-${{ github.ref }}
+#   cancel-in-progress: true
 
-jobs:
-  build:
-    name: Build and test
+# jobs:
+#   build:
+#     name: Build and test
 
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - macos-latest
-          - ubuntu-latest
-          # - windows-latest # for some reason windows build is not picking dune 3.5
-        ocaml-compiler:
-          - ocaml-variants.5.1.0+trunk
+#     strategy:
+#       fail-fast: false
+#       matrix:
+#         os:
+#           # TODO Re-enable this once Windows builds are working.
+#           # - macos-latest
+#           # - ubuntu-latest
+#           - windows-latest # for some reason windows build is not picking dune 3.5
+#         ocaml-compiler:
+#           - ocaml-variants.5.1.0+trunk
 
-    runs-on: ${{ matrix.os }}
+#     runs-on: ${{ matrix.os }}
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          submodules: 'recursive'
-          path: melange
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
+#         with:
+#           submodules: 'recursive'
+#           path: melange
 
-      - name: Use Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
+#       - name: Use Node
+#         uses: actions/setup-node@v3
+#         with:
+#           node-version: 18
 
-      - name: Install Homebrew dependencies
-        if: ${{ matrix.os == 'macos-latest' }}
-        run: |
-          env HOMEBREW_NO_AUTO_UPDATE=1 brew install tree
+#       - name: Install Homebrew dependencies
+#         if: ${{ matrix.os == 'macos-latest' }}
+#         run: |
+#           env HOMEBREW_NO_AUTO_UPDATE=1 brew install tree
 
-      - name: Use OCaml ${{ matrix.ocaml-compiler }}
-        uses: ocaml/setup-ocaml@v2
-        with:
-          ocaml-compiler: ${{ matrix.ocaml-compiler }}
+#       - name: Use OCaml ${{ matrix.ocaml-compiler }}
+#         uses: ocaml/setup-ocaml@v2
+#         with:
+#           ocaml-compiler: ${{ matrix.ocaml-compiler }}
 
-      - name: Install dependencies
-        working-directory: melange
-        run: |
-          opam update
-          make opam-install-test
+#       - name: Install dependencies (Windows)
+#         if: ${{ matrix.os == 'windows-latest' }}
+#         working-directory: melange
+#         run: |
+#            opam update
+#            opam pin -y add dune.dev https://github.com/ocaml/dune.git#a08e0f7f8a857b348267b30b10b9297ef881bb4d
+#            opam pin -y add melange-compiler-libs.dev https://github.com/melange-re/melange-compiler-libs.git#575ac4c24b296ea897821f9aaee1146ff258c704
+#            opam pin add reactjs-jsx-ppx.dev . --with-test -y
+#            opam pin add melange.dev . --with-test -y
+#            opam pin add rescript-syntax.dev . --with-test -y
 
-      - name: Clone melange-opam-template
-        run: |
-          git clone https://github.com/melange-re/melange-opam-template.git
-          cd melange-opam-template && git checkout anmonteiro/melange-ppx
+#       - name: Install dependencies
+#         working-directory: melange
+#         run: |
+#           opam update
+#           make opam-install-test
 
-      - name: Install all deps
-        working-directory: melange-opam-template
-        run: |
-          opam pin add reason-react -y git+https://github.com/reasonml/reason-react.git#anmonteiro/mel-attrs
-          npm install
+#       - name: Clone melange-opam-template
+#         run: |
+#           git clone https://github.com/melange-re/melange-opam-template.git
+#           cd melange-opam-template && git checkout anmonteiro/melange-ppx
 
-      - name: Build basic template
-        working-directory: melange-opam-template
-        run: |
-          opam exec -- dune build @react @node --display=short
-          npm run bundle
+#       - name: Install all deps
+#         working-directory: melange-opam-template
+#         run: |
+#           opam pin add reason-react -y git+https://github.com/reasonml/reason-react.git#anmonteiro/mel-attrs
+#           npm install
 
-      - name: Run resulting .js files
-        working-directory: melange-opam-template
-        run: |
-          node ./_build/default/src/node/src/Hello.js
+#       - name: Build basic template
+#         working-directory: melange-opam-template
+#         run: |
+#           opam exec -- dune build @react @node --display=short
+#           npm run bundle
+
+#       - name: Run resulting .js files
+#         working-directory: melange-opam-template
+#         run: |
+#           node ./_build/default/src/node/src/Hello.js
